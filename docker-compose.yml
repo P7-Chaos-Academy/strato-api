@@ -1,0 +1,45 @@
+services:
+  postgres:
+    image: postgres:15
+    container_name: strato-postgres
+    environment:
+      POSTGRES_DB: strato
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d strato"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    networks:
+      - strato-network
+
+  app:
+    build: .
+    container_name: strato-app
+    image: cgamel/strato-api:latest
+    ports:
+      - "8080:80"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:80
+      - ConnectionStrings__DefaultConnection=Host=postgres;Port=5432;Database=strato;Username=postgres;Password=postgres;Include Error Detail=true
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - strato-network
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+
+networks:
+  strato-network:
+    driver: bridge
+

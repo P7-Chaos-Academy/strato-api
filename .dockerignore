@@ -1,0 +1,15 @@
+﻿**/bin/
+**/obj/
+**/.vs/
+**/.vscode/
+**/.idea/
+**/.git/
+**/node_modules/
+**/.env
+**/.env.local
+**/appsettings.Development.json
+**/Dockerfile*
+**/docker-compose*
+**/.dockerignore
+**/*.md
+
