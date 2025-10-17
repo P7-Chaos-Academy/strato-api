@@ -41,19 +41,19 @@ jobs:
           echo ${{ secrets.DOCKER_PASSWORD }} | docker login -u ${{ secrets.DOCKER_USERNAME }} --password-stdin
           docker push ${{ secrets.DOCKER_USERNAME }}/strato-api:${{ steps.image-tag.outputs.tag }}
 
-#      - name: Checkout devops repository
-#        uses: actions/checkout@v2
-#        with:
-#          repository: ChristofferGamel/studiestart-devops
-#          token: ${{ secrets.DEVOPS_REPO_TOKEN }}
-#          path: devops-repo
+      - name: Checkout devops repository
+        uses: actions/checkout@v2
+        with:
+          repository: P7-Chaos-Academy/devops
+          token: ${{ secrets.DEVOPS_REPO_TOKEN }}
+          path: devops-repo
 
-#      - name: Update Kubernetes manifest
-#        run: |
-#          cd devops-repo
-#          sed -i "s|image: cgamel/strato-api:.*|image: ${{ steps.image-tag.outputs.full_image }}|g" backend/backend-deployment.yaml
-#          git config --global user.email "action@github.com"
-#          git config --global user.name "GitHub Action"
-#          git add backend/backend-deployment.yaml
-#          git commit -m "Update backend image to ${{ steps.image-tag.outputs.tag }}"
-#          git push
+      - name: Update Kubernetes manifest
+        run: |
+          cd devops-repo
+          sed -i "s|image: cgamel/strato-api:.*|image: ${{ steps.image-tag.outputs.full_image }}|g" strato-api/strato-api-deployment.yaml
+          git config --global user.email "action@github.com"
+          git config --global user.name "GitHub Action"
+          git add strato-api/strato-api-deployment.yaml
+          git commit -m "Update api image to ${{ steps.image-tag.outputs.tag }}"
+          git push
