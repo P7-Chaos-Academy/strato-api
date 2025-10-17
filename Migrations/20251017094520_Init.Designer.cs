@@ -4,15 +4,15 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
-using StudiestartBackend.Data;
+using stratoapi.Data;
 
 #nullable disable
 
 namespace stratoapi.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20251017092414_init")]
-    partial class init
+    [Migration("20251017094520_Init")]
+    partial class Init
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -24,7 +24,7 @@ namespace stratoapi.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("StudiestartBackend.Models.Test", b =>
+            modelBuilder.Entity("stratoapi.Models.Test", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()

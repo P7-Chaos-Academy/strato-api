@@ -1,9 +1,9 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using StudiestartBackend.Data;
-using StudiestartBackend.Models;
+using stratoapi.Data;
+using stratoapi.Models;
 
-namespace StudiestartBackend.Controllers;
+namespace stratoapi.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]

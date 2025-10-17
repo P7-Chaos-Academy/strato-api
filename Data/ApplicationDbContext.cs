@@ -1,28 +1,28 @@
 using Microsoft.EntityFrameworkCore;
-using StudiestartBackend.Models;
+using stratoapi.Models;
 
-namespace StudiestartBackend.Data
+namespace stratoapi.Data;
+
+public class ApplicationDbContext : DbContext
 {
-    public class ApplicationDbContext : DbContext
+    public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
     {
-        public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
+    }
+
+    public DbSet<Test> Test { get; set; }
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        base.OnModelCreating(modelBuilder);
+
+        // Configure Post entity
+        modelBuilder.Entity<Test>(entity =>
         {
-        }
+            entity.HasKey(e => e.Id);
+            entity.HasIndex(e => e.Name).IsUnique();
+        });
 
-        public DbSet<Test> Test { get; set; }
-
-        protected override void OnModelCreating(ModelBuilder modelBuilder)
-        {
-            base.OnModelCreating(modelBuilder);
-
-            // Configure Post entity
-            modelBuilder.Entity<Test>(entity =>
-            {
-                entity.HasKey(e => e.Id);
-                entity.HasIndex(e => e.Name).IsUnique();
-            });
-
-            
-        }
+        
     }
 }
+

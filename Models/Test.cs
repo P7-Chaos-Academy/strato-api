@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace StudiestartBackend.Models;
+namespace stratoapi.Models;
 
 public class Test
 {
