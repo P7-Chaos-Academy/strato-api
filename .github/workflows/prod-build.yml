@@ -46,7 +46,7 @@ jobs:
         with:
           repository: P7-Chaos-Academy/devops
           path: devops-repo
-          ssh-key: ${{ secrets.DEVOPS_REPO_SSH_KEY }}
+          ssh-key: ${{ secrets.DEVOPS_REPO_TOKEN }}
           persist-credentials: false
 
       - name: Update Kubernetes manifest
