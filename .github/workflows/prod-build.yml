@@ -45,9 +45,8 @@ jobs:
         uses: actions/checkout@v2
         with:
           repository: P7-Chaos-Academy/devops
+          token: ${{ secrets.DEVOPS_REPO_TOKEN }}
           path: devops-repo
-          ssh-key: ${{ secrets.DEVOPS_REPO_TOKEN }}
-          persist-credentials: false
 
       - name: Update Kubernetes manifest
         run: |
