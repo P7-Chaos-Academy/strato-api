@@ -68,7 +68,7 @@ public class AuthService
         var jwtSettings = _configuration.GetSection("JwtSettings");
         var secretKey = jwtSettings["SecretKey"] ?? throw new InvalidOperationException("JWT SecretKey not configured");
         var issuer = jwtSettings["Issuer"] ?? "StudiestartBackend";
-        var audience = jwtSettings["Audience"] ?? "StudiestartUsers";
+        var audience = jwtSettings["Audience"] ?? "Users";
         
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey));
         var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
