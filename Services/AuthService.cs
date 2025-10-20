@@ -101,9 +101,6 @@ public class AuthService
     
     public bool VerifyPassword(string password, string storedPassword)
     {
-        Console.WriteLine("Verifying password for stored password: " + storedPassword);
-        bool isValid = password == storedPassword;
-        Console.WriteLine("Password verification result: " + isValid);
-        return isValid;
+        return password == storedPassword;
     }
 }
