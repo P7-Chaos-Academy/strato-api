@@ -28,7 +28,8 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_URLS=http://+:80
-      - ConnectionStrings__DefaultConnection=Host=postgres;Port=5432;Database=strato;Username=postgres;Password=postgres;Include Error Detail=true
+      - ConnectionStrings__DefaultConnection=Host=postgres;Port=5432;Database=strato;Username=postgres;Password=postgres;
+      - JwtSettings__SecretKey=development-jwt-secret-key-that-is-long-enough-for-jwt-tokens-to-work-properly-and-secure
     depends_on:
       postgres:
         condition: service_healthy
