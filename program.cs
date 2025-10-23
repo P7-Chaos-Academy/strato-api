@@ -61,6 +61,9 @@ builder.Services.AddAuthorization();
 // Add authentication service
 builder.Services.AddScoped<AuthService>();
 
+// Add HTTP Client
+builder.Services.AddHttpClient();
+
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
