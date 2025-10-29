@@ -20,7 +20,6 @@ public class ApiKeyMiddleware
 
     public async Task InvokeAsync(HttpContext context)
     {
-        // Allow configurability of the header name, fallback to constant
         var headerName = _configuration.GetValue<string>("ApiKeyHeaderName") ?? Constants.ApiKeyHeaderName;
 
         if (!context.Request.Headers.TryGetValue(headerName, out var extractedApiKey) || string.IsNullOrWhiteSpace(extractedApiKey))
