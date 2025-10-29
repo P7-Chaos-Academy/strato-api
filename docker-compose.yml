@@ -30,6 +30,7 @@ services:
       - ASPNETCORE_URLS=http://+:80
       - ConnectionStrings__DefaultConnection=Host=postgres;Port=5432;Database=strato;Username=postgres;Password=postgres;
       - JwtSettings__SecretKey=development-jwt-secret-key-that-is-long-enough-for-jwt-tokens-to-work-properly-and-secure
+      - ApiKey=dev-api-key-change-in-production
     depends_on:
       postgres:
         condition: service_healthy
@@ -43,4 +44,3 @@ volumes:
 networks:
   strato-network:
     driver: bridge
-
