@@ -50,4 +50,16 @@ public class AuthController : ControllerBase
 
         return Ok("User registered successfully.");
     }
+
+    [HttpGet("me")]
+    [Authorize]
+    public IActionResult Me()
+    {
+        var username = User.Identity?.Name;
+        var roles = User.Claims
+            .Where(c => c.Type == "role")
+            .Select(c => c.Value)
+            .ToList();
+        return Ok(new { Username = username, Roles = roles });
+    }
 }
