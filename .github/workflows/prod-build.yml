@@ -54,6 +54,6 @@ jobs:
           sed -i "s|image: cgamel/strato-api:.*|image: ${{ steps.image-tag.outputs.full_image }}|g" strato-api/strato-api-deployment.yaml
           git config --global user.email "action@github.com"
           git config --global user.name "GitHub Action"
-          git add strato-api/strato-api-deployment.yaml
+          git add strato-api/deployment.yaml
           git commit -m "Update api image to ${{ steps.image-tag.outputs.tag }}"
           git push
