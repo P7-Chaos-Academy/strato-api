@@ -51,7 +51,7 @@ jobs:
       - name: Update Kubernetes manifest
         run: |
           cd gitops-repo
-          sed -i "s|image: cgamel/strato-api:.*|image: ${{ steps.image-tag.outputs.full_image }}|g" strato-api/strato-api-deployment.yaml
+          sed -i "s|image: cgamel/strato-api:.*|image: ${{ steps.image-tag.outputs.full_image }}|g" strato-api/deployment.yaml
           git config --global user.email "action@github.com"
           git config --global user.name "GitHub Action"
           git add strato-api/deployment.yaml
