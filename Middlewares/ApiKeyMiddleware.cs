@@ -22,7 +22,7 @@ public class ApiKeyMiddleware
     {
         string headerName = _configuration.GetValue<string>("ApiKeyHeaderName") ?? Constants.ApiKeyHeaderName;
 
-        string path = context.Request.Path;
+        PathString path = context.Request.Path;
         
         if (path.StartsWithSegments("/swagger", StringComparison.OrdinalIgnoreCase) ||
             path.StartsWithSegments("/swagger-ui", StringComparison.OrdinalIgnoreCase))
