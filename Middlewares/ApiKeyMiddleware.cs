@@ -20,9 +20,9 @@ public class ApiKeyMiddleware
 
     public async Task InvokeAsync(HttpContext context)
     {
-        var headerName = _configuration.GetValue<string>("ApiKeyHeaderName") ?? Constants.ApiKeyHeaderName;
+        string headerName = _configuration.GetValue<string>("ApiKeyHeaderName") ?? Constants.ApiKeyHeaderName;
 
-        var path = context.Request.Path;
+        string path = context.Request.Path;
         
         if (path.StartsWithSegments("/swagger", StringComparison.OrdinalIgnoreCase) ||
             path.StartsWithSegments("/swagger-ui", StringComparison.OrdinalIgnoreCase) ||
