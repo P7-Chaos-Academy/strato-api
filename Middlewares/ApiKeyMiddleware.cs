@@ -22,6 +22,16 @@ public class ApiKeyMiddleware
     {
         var headerName = _configuration.GetValue<string>("ApiKeyHeaderName") ?? Constants.ApiKeyHeaderName;
 
+        var path = context.Request.Path;
+        
+        if (path.StartsWithSegments("/swagger", StringComparison.OrdinalIgnoreCase) ||
+            path.StartsWithSegments("/swagger-ui", StringComparison.OrdinalIgnoreCase) ||
+            path.Value?.IndexOf("swagger", StringComparison.OrdinalIgnoreCase) >= 0)
+        {
+            await _next(context);
+            return;
+        }
+        
         if (!context.Request.Headers.TryGetValue(headerName, out var extractedApiKey) || string.IsNullOrWhiteSpace(extractedApiKey))
         {
             context.Response.StatusCode = (int)HttpStatusCode.Unauthorized;
