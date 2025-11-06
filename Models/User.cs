@@ -13,8 +13,8 @@ public class User : BaseModel
     
     [Required]
     public byte[] PasswordHash { get; set; }
-    [Required]
     
+    [Required]
     public byte[] PasswordSalt { get; set; }
     public AuthRole Role { get; set; } = AuthRole.User;
 }

@@ -1,16 +1,12 @@
-using Microsoft.AspNetCore.SignalR.Protocol;
 using Microsoft.EntityFrameworkCore;
 using stratoapi.Models;
-using stratoapi.Services; //TODO: Ikke hardcode users
 
 namespace stratoapi.Data;
 
 public class ApplicationDbContext : DbContext
 {
-    private readonly AuthService _authService; //TODO: Ikke hardcode users
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
     {
-        _authService = new AuthService(new ConfigurationBuilder().Build(), this); //TODO: Ikke hardcode users
     }
 
     public DbSet<Test> Test { get; set; }
@@ -36,15 +32,23 @@ public class ApplicationDbContext : DbContext
             entity.HasIndex(e => e.Name).IsUnique();
         });
         
-        AuthService.PasswordHashAndSalt hashAndSalt = _authService.HashPassword("clanker"); //TODO: Ikke hardcode users
-        
         // Seed admin user with password
         var initUser = new User
         {
             Id = 1,
             Username = "seedUser",
-            PasswordHash = hashAndSalt.PasswordHash,
-            PasswordSalt = hashAndSalt.PasswordSalt,
+            PasswordHash = new byte[]
+            {
+                0x00, 0x1f, 0xa4, 0xb6, 0x86, 0x11, 0xfa, 0x0e,
+                0x9c, 0xf9, 0x95, 0xc1, 0x45, 0x50, 0xf8, 0x1a,
+                0xc6, 0x32, 0xe9, 0x26, 0xd9, 0x45, 0x21, 0x0d,
+                0x60, 0x3f, 0x2b, 0xea, 0x4d, 0x53, 0x90, 0x0a,
+                0xaf, 0x06, 0x27, 0x17, 0xf1, 0x7d, 0x7c, 0x25,
+                0x6b, 0xe4, 0x30, 0x80, 0xf0, 0x3e, 0xc5, 0x50,
+                0xa4, 0xb5, 0x64, 0x45, 0x87, 0x0a, 0xd4, 0x30,
+                0x31, 0x04, 0xcd, 0x41, 0xe3, 0x69, 0xe6, 0xcc
+            },                                                  // Extreme Code smell
+            PasswordSalt = new byte[] {0},
             Role = AuthRole.SeedUser,
             CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, DateTimeKind.Utc)
         };

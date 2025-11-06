@@ -106,7 +106,6 @@ public class AuthService
         return new JwtSecurityTokenHandler().WriteToken(token);
     }
     
-    // SHA256 password hashing taken from DotNet documentation
     public PasswordHashAndSalt HashPassword(string password)
     {
         HMACSHA512 hmac = new HMACSHA512();
