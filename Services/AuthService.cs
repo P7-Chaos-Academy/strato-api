@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Text;
 using Microsoft.EntityFrameworkCore;
 using System.IdentityModel.Tokens.Jwt;
@@ -13,7 +14,16 @@ public class AuthService
 {
     private readonly ApplicationDbContext _context;
     private readonly IConfiguration _configuration;
-
+    public readonly struct PasswordHashAndSalt
+    {
+        public byte[] PasswordHash { get; } 
+        public byte[] PasswordSalt { get; }
+        public PasswordHashAndSalt(byte[] passwordHash, byte[] passwordSalt)
+        {
+            PasswordHash = passwordHash;
+            PasswordSalt = passwordSalt;
+        }
+    }
 
     public AuthService(IConfiguration configuration, ApplicationDbContext context)
     {
@@ -28,7 +38,7 @@ public class AuthService
         var user = await _context.Users
             .FirstOrDefaultAsync(u => u.Username == loginDto.Username);
             
-        if (user == null || !VerifyPassword(loginDto.Password, user.PasswordHash))
+        if (user == null || !VerifyPassword(loginDto.Password, user.PasswordHash, user.PasswordSalt))
         {
             return null;
         }
@@ -51,16 +61,19 @@ public class AuthService
         {
             return false; // Username already taken
         }
+
+        PasswordHashAndSalt hashAndSalt = HashPassword(registrationDto.Password);
         
         var newUser = new User
         {
             Username = registrationDto.Username,
-            PasswordHash = HashPassword(registrationDto.PasswordHash)
+            PasswordHash = hashAndSalt.PasswordHash,
+            PasswordSalt = hashAndSalt.PasswordSalt
         };
         
         _context.Users.Add(newUser);
         await _context.SaveChangesAsync();
-        return true;
+        return true;    
     }
     
     public string GenerateToken(User user)
@@ -93,14 +106,18 @@ public class AuthService
         return new JwtSecurityTokenHandler().WriteToken(token);
     }
     
-    public string HashPassword(string password)
+    public PasswordHashAndSalt HashPassword(string password)
     {
-        // Store password as plaintext (no hashing)
-        return password;
+        HMACSHA512 hmac = new HMACSHA512();
+        byte[] saltPassword = hmac.Key;
+        byte[] hashedPassword = hmac.ComputeHash(Encoding.UTF8.GetBytes(password));
+        return new PasswordHashAndSalt(hashedPassword, saltPassword);
     }
     
-    public bool VerifyPassword(string password, string storedPassword)
+    public bool VerifyPassword(string password, byte[] storedHashedPassword, byte[] storedSalt)
     {
-        return password == storedPassword;
+        HMACSHA512 hmac = new HMACSHA512(storedSalt);
+        byte[] computedHash = hmac.ComputeHash(Encoding.UTF8.GetBytes(password));
+        return computedHash.SequenceEqual(storedHashedPassword);
     }
 }

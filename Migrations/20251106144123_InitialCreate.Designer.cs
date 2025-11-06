@@ -12,8 +12,8 @@ using stratoapi.Data;
 namespace stratoapi.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20251020070219_Auth")]
-    partial class Auth
+    [Migration("20251106144123_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -25,31 +25,13 @@ namespace stratoapi.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("stratoapi.Models.Test", b =>
+            modelBuilder.Entity("stratoapi.Models.User", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("integer");
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("Name")
-                        .IsUnique();
-
-                    b.ToTable("Test");
-                });
-
-            modelBuilder.Entity("stratoapi.Models.User", b =>
-                {
-                    b.Property<string>("Username")
-                        .HasColumnType("text");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
@@ -59,14 +41,16 @@ namespace stratoapi.Migrations
 
                     b.Property<string>("Email")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)");
 
-                    b.Property<int>("Id")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("PasswordHash")
+                    b.Property<byte[]>("PasswordHash")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasColumnType("bytea");
+
+                    b.Property<byte[]>("PasswordSalt")
+                        .IsRequired()
+                        .HasColumnType("bytea");
 
                     b.Property<int>("Role")
                         .HasColumnType("integer");
@@ -77,19 +61,31 @@ namespace stratoapi.Migrations
                     b.Property<int?>("UpdatedBy")
                         .HasColumnType("integer");
 
-                    b.HasKey("Username");
+                    b.Property<string>("Username")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Email")
+                        .IsUnique();
+
+                    b.HasIndex("Username")
+                        .IsUnique();
 
                     b.ToTable("Users");
 
                     b.HasData(
                         new
                         {
-                            Username = "seedUser",
+                            Id = 1,
                             CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             Email = "",
-                            Id = 1,
-                            PasswordHash = "clanker",
-                            Role = 2
+                            PasswordHash = new byte[] { 0, 31, 164, 182, 134, 17, 250, 14, 156, 249, 149, 193, 69, 80, 248, 26, 198, 50, 233, 38, 217, 69, 33, 13, 96, 63, 43, 234, 77, 83, 144, 10, 175, 6, 39, 23, 241, 125, 124, 37, 107, 228, 48, 128, 240, 62, 197, 80, 164, 181, 100, 69, 135, 10, 212, 48, 49, 4, 205, 65, 227, 105, 230, 204 },
+                            PasswordSalt = new byte[] { 0 },
+                            Role = 2,
+                            Username = "seedUser"
                         });
                 });
 #pragma warning restore 612, 618
