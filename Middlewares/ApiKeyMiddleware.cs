@@ -25,8 +25,7 @@ public class ApiKeyMiddleware
         string path = context.Request.Path;
         
         if (path.StartsWithSegments("/swagger", StringComparison.OrdinalIgnoreCase) ||
-            path.StartsWithSegments("/swagger-ui", StringComparison.OrdinalIgnoreCase) ||
-            path.Value?.IndexOf("swagger", StringComparison.OrdinalIgnoreCase) >= 0)
+            path.StartsWithSegments("/swagger-ui", StringComparison.OrdinalIgnoreCase))
         {
             await _next(context);
             return;
