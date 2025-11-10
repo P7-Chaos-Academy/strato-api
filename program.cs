@@ -71,6 +71,11 @@ builder.Services.AddSingleton<IApiKeyService, ApiKeyService>();
 
 // Metrics service
 builder.Services.AddScoped<IMetricsService, MetricsService>();
+var prometheusBase = builder.Configuration["Prometheus:BaseUrl"] ?? "http://localhost:9090";
+builder.Services.AddHttpClient<IPrometheusService, PrometheusService>(client =>
+{
+    client.BaseAddress = new Uri(prometheusBase);
+});
 
 
 // Mappers

@@ -6,27 +6,29 @@ using stratoapi.Services;
 
 namespace stratoapi.Controllers;
 
+[ApiController]
+[Route("api/[controller]")]
+[Authorize(Roles = $"{nameof(AuthRole.SeedUser)},{nameof(AuthRole.Admin)}")]
 public class MetricsController : ControllerBase
 {
     private readonly IMetricsService _metricsService;
-    
+    private readonly IPrometheusService _prometheusService;
 
-    public MetricsController(IMetricsService metricsService)
+
+    public MetricsController(IMetricsService metricsService, IPrometheusService prometheusService)
     {
         _metricsService = metricsService;
+        _prometheusService = prometheusService;
     }
 
     [HttpGet("metrics")]
-    [Authorize(Roles = $"{nameof(AuthRole.SeedUser)},{nameof(AuthRole.Admin)}")]
     public async Task<IActionResult> GetMetrics()
     {
-        var metrics = await _metricsService.GetAllMetricTypes();
+        List<MetricType> metrics = await _metricsService.GetAllMetricTypes();
         return Ok(metrics);
     }
     
     [HttpPost("metrics")]
-    [Authorize(Roles = $"{nameof(AuthRole.SeedUser)},{nameof(AuthRole.Admin)}")]
-
     public async Task<IActionResult> AddMetric([FromBody] MetricsDto metricType)
     {
         if (!ModelState.IsValid)
@@ -38,10 +40,25 @@ public class MetricsController : ControllerBase
     }
 
     [HttpDelete("metrics/{id}")]
-    [Authorize(Roles = $"{nameof(AuthRole.SeedUser)},{nameof(AuthRole.Admin)}")]
     public async Task<IActionResult> DeleteMetric(int id)
     {
         await _metricsService.DeleteMetricType(id);
         return Ok("Metric type deleted successfully.");
+    }
+    
+    /// <summary>
+    /// Simplified proxy to Prometheus. Does not require JWT but does require the API key middleware.
+    /// Use this endpoint to execute instant or range queries against the configured Prometheus server.
+    /// </summary>
+    [HttpPost("query")]
+    public async Task<IActionResult> QueryPrometheus([FromBody] PrometheusQueryDto dto)
+    {
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ModelState);
+        }
+
+        string result = await _prometheusService.QueryAsync(dto);
+        return Content(result, "application/json");
     }
 }
