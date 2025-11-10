@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using stratoapi.Data;
+using stratoapi.Dtos;
 using stratoapi.Middlewares;
 using stratoapi.Services;
 
@@ -59,11 +60,21 @@ builder.Services.AddAuthentication(options =>
 
 builder.Services.AddAuthorization();
 
+// Add HttpContextAccessor for accessing user context in DbContext
+builder.Services.AddHttpContextAccessor();
+
 // Add authentication service
 builder.Services.AddScoped<AuthService>();
 
 // Api key service
 builder.Services.AddSingleton<IApiKeyService, ApiKeyService>();
+
+// Metrics service
+builder.Services.AddScoped<IMetricsService, MetricsService>();
+
+
+// Mappers
+builder.Services.AddAutoMapper(typeof(MetricsDto).Assembly);
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();

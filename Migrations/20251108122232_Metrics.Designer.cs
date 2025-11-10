@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using stratoapi.Data;
@@ -11,9 +12,11 @@ using stratoapi.Data;
 namespace stratoapi.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251108122232_Metrics")]
+    partial class Metrics
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -38,16 +41,11 @@ namespace stratoapi.Migrations
 
                     b.Property<string>("Description")
                         .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("character varying(500)");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("boolean");
+                        .HasColumnType("text");
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
+                        .HasColumnType("text");
 
                     b.Property<string>("PrometheusIdentifier")
                         .IsRequired()
@@ -61,10 +59,6 @@ namespace stratoapi.Migrations
                         .HasColumnType("integer");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("CreatedBy");
-
-                    b.HasIndex("UpdatedBy");
 
                     b.ToTable("MetricTypes");
                 });
@@ -87,9 +81,6 @@ namespace stratoapi.Migrations
                         .IsRequired()
                         .HasMaxLength(255)
                         .HasColumnType("character varying(255)");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("boolean");
 
                     b.Property<byte[]>("PasswordHash")
                         .IsRequired()
@@ -129,25 +120,11 @@ namespace stratoapi.Migrations
                             Id = 1,
                             CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             Email = "seed@example.com",
-                            IsDeleted = false,
-                            PasswordHash = new byte[] { 229, 151, 129, 199, 101, 184, 113, 85, 185, 231, 201, 87, 208, 114, 108, 201, 98, 43, 78, 231, 189, 186, 182, 97, 214, 6, 123, 7, 104, 45, 204, 26, 141, 149, 17, 208, 255, 42, 193, 45, 59, 62, 62, 7, 145, 240, 127, 222, 185, 144, 104, 119, 166, 254, 108, 146, 137, 207, 104, 91, 5, 133, 145, 128 },
-                            PasswordSalt = new byte[] { 225, 103, 2, 229, 130, 229, 139, 22, 55, 11, 180, 111, 251, 7, 12, 66, 179, 3, 254, 97, 126, 226, 136, 59, 31, 103, 49, 218, 195, 25, 118, 110, 98, 112, 135, 20, 115, 185, 251, 252, 105, 119, 74, 197, 202, 111, 193, 7, 170, 9, 19, 72, 212, 182, 186, 57, 14, 233, 248, 113, 160, 17, 166, 204, 2, 236, 253, 187, 60, 2, 164, 202, 175, 6, 207, 141, 164, 158, 12, 146, 70, 41, 195, 123, 87, 96, 144, 198, 64, 146, 250, 146, 10, 148, 239, 198, 240, 99, 52, 222, 17, 79, 104, 84, 167, 172, 73, 204, 14, 130, 127, 109, 135, 220, 173, 223, 206, 254, 115, 79, 130, 97, 161, 64, 13, 89, 225, 150 },
+                            PasswordHash = new byte[] { 1, 245, 150, 104, 218, 18, 191, 109, 215, 131, 79, 254, 147, 19, 237, 82, 42, 170, 174, 161, 108, 35, 233, 35, 9, 159, 45, 37, 130, 136, 54, 221, 207, 69, 59, 37, 204, 38, 164, 247, 153, 174, 134, 135, 53, 220, 214, 19, 92, 52, 46, 82, 76, 163, 220, 91, 134, 75, 213, 27, 44, 174, 250, 51 },
+                            PasswordSalt = new byte[] { 241, 164, 169, 122, 220, 136, 201, 206, 242, 107, 168, 34, 191, 37, 52, 246, 34, 20, 183, 147, 105, 190, 95, 99, 107, 198, 189, 93, 105, 184, 170, 246, 81, 32, 168, 65, 148, 51, 154, 233, 83, 127, 105, 168, 154, 173, 33, 147, 5, 116, 93, 121, 15, 90, 98, 179, 63, 230, 140, 29, 6, 46, 102, 145, 100, 214, 239, 8, 34, 62, 225, 198, 194, 48, 211, 146, 104, 153, 128, 237, 8, 212, 132, 226, 86, 92, 41, 253, 34, 141, 87, 178, 245, 179, 78, 81, 154, 150, 134, 177, 202, 239, 9, 88, 142, 224, 160, 193, 86, 212, 45, 47, 132, 60, 35, 9, 44, 253, 211, 152, 53, 243, 231, 44, 156, 232, 243, 79 },
                             Role = 2,
                             Username = "seedUser"
                         });
-                });
-
-            modelBuilder.Entity("stratoapi.Models.MetricType", b =>
-                {
-                    b.HasOne("stratoapi.Models.User", null)
-                        .WithMany()
-                        .HasForeignKey("CreatedBy")
-                        .OnDelete(DeleteBehavior.SetNull);
-
-                    b.HasOne("stratoapi.Models.User", null)
-                        .WithMany()
-                        .HasForeignKey("UpdatedBy")
-                        .OnDelete(DeleteBehavior.SetNull);
                 });
 #pragma warning restore 612, 618
         }
