@@ -1,4 +1,3 @@
-// filepath: /home/chris/Desktop/coding/p7/strato-api/Services/IPrometheusService.cs
 using stratoapi.Dtos;
 
 namespace stratoapi.Services;
