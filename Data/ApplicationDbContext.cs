@@ -141,6 +141,7 @@ public class ApplicationDbContext : DbContext
             entity.Property(e => e.Name).IsRequired().HasMaxLength(100);
             entity.Property(e => e.Description).IsRequired().HasMaxLength(500);
             entity.Property(e => e.PrometheusIdentifier).IsRequired().HasMaxLength(200);
+            entity.Property(e => e.Unit).IsRequired(false).HasMaxLength(50);
             entity.Property(e => e.CreatedAt).IsRequired();
             entity.Property(e => e.CreatedBy).IsRequired(false);
             entity.Property(e => e.UpdatedBy).IsRequired(false);

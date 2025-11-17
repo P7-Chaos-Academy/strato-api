@@ -10,7 +10,7 @@ namespace stratoapi.Dtos;
 public class PrometheusQueryDto
 {
     [Required]
-    public required string Query { get; set; }
+    public required int MetricId { get; set; }
 
     /// <summary>
     /// When performing an instant query this optional value sets the evaluation time (UTC). If null now is used.
