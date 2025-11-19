@@ -13,5 +13,5 @@ public interface IPrometheusService
     /// Executes a Prometheus instant or range query based on the provided DTO.
     /// Returns the raw Prometheus JSON response as a string.
     /// </summary>
-    Task<string> QueryAsync(PrometheusQueryDto dto, CancellationToken cancellationToken = default);
+    Task<string> QueryAsync(PrometheusQueryDto dto);
 }

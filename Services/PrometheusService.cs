@@ -20,18 +20,26 @@ public class PrometheusService : IPrometheusService
         _context = context;
     }
 
-    public async Task<string> QueryAsync(PrometheusQueryDto dto, CancellationToken cancellationToken = default)
+    public async Task<string> QueryAsync(PrometheusQueryDto dto)
     {
         if (dto == null) throw new ArgumentNullException(nameof(dto));
-        MetricType? metricType = await _context.MetricTypes.FindAsync(new object[] { dto.MetricId }, cancellationToken);
+        MetricType? metricType = await _context.MetricTypes.FindAsync(new object[] { dto.MetricId });
 
         if (metricType == null) throw new KeyNotFoundException($"Metric type with ID {dto.MetricId} not found.");
 
-        var builder = new StringBuilder();
+        StringBuilder builder = new StringBuilder();
+        
+        string query = metricType.PrometheusIdentifier;
+        
+        if (!string.IsNullOrWhiteSpace(dto.Instance))
+        {
+            query = $"{query}{{instance=\"{dto.Instance}\"}}";
+        }
+
         if (dto.IsRange)
         {
             builder.Append("/api/v1/query_range?");
-            builder.Append("query=").Append(Uri.EscapeDataString(metricType.PrometheusIdentifier));
+            builder.Append("query=").Append(Uri.EscapeDataString(query));
 
             DateTime start = dto.Start ?? DateTime.UtcNow.AddHours(-1);
             DateTime end = dto.End ?? DateTime.UtcNow;
@@ -44,7 +52,7 @@ public class PrometheusService : IPrometheusService
         else
         {
             builder.Append("/api/v1/query?");
-            builder.Append("query=").Append(Uri.EscapeDataString(metricType.PrometheusIdentifier));
+            builder.Append("query=").Append(Uri.EscapeDataString(query));
 
             DateTime time = dto.Time ?? DateTime.UtcNow;
             builder.Append("&time=").Append(((DateTimeOffset)time).ToUnixTimeSeconds());
@@ -52,10 +60,9 @@ public class PrometheusService : IPrometheusService
 
         string url = builder.ToString();
 
-        using var res = await _http.GetAsync(url, cancellationToken);
-        string content = await res.Content.ReadAsStringAsync(cancellationToken);
+        using var res = await _http.GetAsync(url);
+        string content = await res.Content.ReadAsStringAsync();
 
-        // Return raw JSON from Prometheus; throw on severe errors so callers can surface status codes.
         if (!res.IsSuccessStatusCode)
         {
             throw new HttpRequestException($"Prometheus returned {(int)res.StatusCode}: {content}");
@@ -100,40 +107,4 @@ public class PrometheusService : IPrometheusService
         return content;
     }
 
-    /// <summary>
-    /// Retrieves metric names from Prometheus using the label values endpoint for __name__.
-    /// </summary>
-    public async Task<List<string>> GetMetricNamesAsync(CancellationToken cancellationToken = default)
-    {
-        using var res = await _http.GetAsync("/api/v1/label/__name__/values", cancellationToken);
-        var content = await res.Content.ReadAsStringAsync(cancellationToken);
-
-        if (!res.IsSuccessStatusCode)
-        {
-            throw new HttpRequestException($"Prometheus returned {(int)res.StatusCode}: {content}");
-        }
-
-        try
-        {
-            using var doc = JsonDocument.Parse(content);
-            var root = doc.RootElement;
-            if (root.TryGetProperty("data", out var data) && data.ValueKind == JsonValueKind.Array)
-            {
-                var list = new List<string>();
-                foreach (var el in data.EnumerateArray())
-                {
-                    if (el.ValueKind == JsonValueKind.String)
-                        list.Add(el.GetString()!);
-                }
-
-                return list;
-            }
-        }
-        catch (JsonException)
-        {
-            // fallthrough to return empty list after logging by caller
-        }
-
-        return new List<string>();
-    }
 }
