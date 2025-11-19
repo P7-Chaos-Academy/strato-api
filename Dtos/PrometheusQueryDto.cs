@@ -36,4 +36,8 @@ public class PrometheusQueryDto
     /// True to run a range query (/api/v1/query_range) otherwise an instant query (/api/v1/query)
     /// </summary>
     public bool IsRange { get; set; } = false;
+    /// <summary>
+    /// Instance to query logs from (e.g. nano1)
+    /// </summary>
+    public string? Instance { get; set; }
 }

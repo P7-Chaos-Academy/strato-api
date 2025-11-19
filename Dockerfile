@@ -18,18 +18,6 @@ COPY --from=build /App/out .
 # Create directory for certificates
 RUN mkdir -p /https
 
-## Copy SSL certificates
-#COPY aspnetapp.crt /https/aspnetapp.crt
-#COPY aspnetapp.key /https/aspnetapp.key
-#
-## Set certificate permissions
-#RUN chmod 600 /https/aspnetapp.key
-#RUN chmod 644 /https/aspnetapp.crt
-
-## Set environment variables for HTTPS
-#ENV ASPNETCORE_Kestrel__Certificates__Default__Path=/https/aspnetapp.crt
-#ENV ASPNETCORE_Kestrel__Certificates__Default__KeyPath=/https/aspnetapp.key
-
 # Expose both HTTP and HTTPS ports
 EXPOSE 80
 EXPOSE 443
