@@ -23,13 +23,13 @@ public class PrometheusService : IPrometheusService
     public async Task<string> QueryAsync(PrometheusQueryDto dto)
     {
         if (dto == null) throw new ArgumentNullException(nameof(dto));
-        MetricType? metricType = await _context.MetricTypes.FindAsync(new object[] { dto.MetricId }, cancellationToken);
+        MetricType? metricType = await _context.MetricTypes.FindAsync(new object[] { dto.MetricId });
 
         if (metricType == null) throw new KeyNotFoundException($"Metric type with ID {dto.MetricId} not found.");
 
         StringBuilder builder = new StringBuilder();
         
-        string query = dto.Query;
+        string query = metricType.PrometheusIdentifier;
         
         if (!string.IsNullOrWhiteSpace(dto.Instance))
         {
@@ -39,7 +39,6 @@ public class PrometheusService : IPrometheusService
         if (dto.IsRange)
         {
             builder.Append("/api/v1/query_range?");
-            builder.Append("query=").Append(Uri.EscapeDataString(metricType.PrometheusIdentifier));
             builder.Append("query=").Append(Uri.EscapeDataString(query));
 
             DateTime start = dto.Start ?? DateTime.UtcNow.AddHours(-1);
@@ -53,7 +52,6 @@ public class PrometheusService : IPrometheusService
         else
         {
             builder.Append("/api/v1/query?");
-            builder.Append("query=").Append(Uri.EscapeDataString(metricType.PrometheusIdentifier));
             builder.Append("query=").Append(Uri.EscapeDataString(query));
 
             DateTime time = dto.Time ?? DateTime.UtcNow;
