@@ -9,7 +9,7 @@ public class MetricType : BaseModel
     [Required]
     public string Description { get; set; }
     [Required]
-    public string PrometheusIdentifier { get; set; }
+    public List<string> PrometheusIdentifier { get; set; } = new List<string>();
 
     public string? Unit { get; set; }
 }
