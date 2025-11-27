@@ -1,7 +1,5 @@
 using System.Text;
 using System.Text.Json;
-using System.Linq;
-using System.Text.RegularExpressions;
 using stratoapi.Data;
 using stratoapi.Dtos;
 using stratoapi.Models;
@@ -29,83 +27,23 @@ public class PrometheusService : IPrometheusService
 
         if (metricType == null) throw new KeyNotFoundException($"Metric type with ID {dto.MetricId} not found.");
 
-        StringBuilder builder = new StringBuilder();
-        
-        string identifier = metricType.PrometheusIdentifier ?? string.Empty;
+        // Work with a list of identifiers
+        var identifiers = metricType.PrometheusIdentifier ?? new List<string>();
+        var idsList = identifiers
+            .Select(s => s?.Trim())
+            .Where(s => !string.IsNullOrWhiteSpace(s))
+            .ToList();
 
-        string query;
-
-        // Allow comma-separated metric names in the stored identifier (e.g. "m1,m2,m3").
-        // Convert to a Prometheus __name__ regex selector so a single request can return multiple metrics.
-        if (identifier.Contains(','))
+        // If multiple identifiers are present, run a separate Prometheus request for each and merge results
+        if (idsList.Count > 1)
         {
-            var ids = identifier
-                .Split(',', StringSplitOptions.RemoveEmptyEntries)
-                .Select(s => Regex.Escape(s.Trim()));
-
-            // Anchor to match exact metric names
-            string regex = "^(" + string.Join("|", ids) + ")$";
-
-            if (!string.IsNullOrWhiteSpace(dto.Instance))
-            {
-                query = $"{{__name__=~\"{regex}\",instance=\"{dto.Instance}\"}}";
-            }
-            else
-            {
-                query = $"{{__name__=~\"{regex}\"}}";
-            }
-        }
-        else
-        {
-            query = identifier;
-
-            if (!string.IsNullOrWhiteSpace(dto.Instance))
-            {
-                query = $"{query}{{instance=\"{dto.Instance}\"}}";
-            }
-        }
-
-        if (dto.IsRange)
-        {
-            builder.Append("/api/v1/query_range?");
-            builder.Append("query=").Append(Uri.EscapeDataString(query));
-
-            DateTime start = dto.Start ?? DateTime.UtcNow.AddHours(-1);
-            DateTime end = dto.End ?? DateTime.UtcNow;
-            string? step = string.IsNullOrWhiteSpace(dto.Step) ? "15s" : dto.Step;
-
-            builder.Append("&start=").Append(((DateTimeOffset)start).ToUnixTimeSeconds());
-            builder.Append("&end=").Append(((DateTimeOffset)end).ToUnixTimeSeconds());
-            builder.Append("&step=").Append(Uri.EscapeDataString(step));
-        }
-        else
-        {
-            builder.Append("/api/v1/query?");
-            builder.Append("query=").Append(Uri.EscapeDataString(query));
-
-            DateTime time = dto.Time ?? DateTime.UtcNow;
-            builder.Append("&time=").Append(((DateTimeOffset)time).ToUnixTimeSeconds());
-        }
-
-        string url = builder.ToString();
-
-        // If multiple comma-separated identifiers were provided in the DB, run a separate
-        // Prometheus request for each identifier and merge the `data.result` arrays.
-        if (identifier.Contains(','))
-        {
-            var ids = identifier
-                .Split(',', StringSplitOptions.RemoveEmptyEntries)
-                .Select(s => s.Trim())
-                .Where(s => !string.IsNullOrWhiteSpace(s))
-                .ToList();
-
             DateTime start = dto.Start ?? DateTime.UtcNow.AddHours(-1);
             DateTime end = dto.End ?? DateTime.UtcNow;
             string step = string.IsNullOrWhiteSpace(dto.Step) ? "15s" : dto.Step;
             DateTime time = dto.Time ?? DateTime.UtcNow;
 
             // Build request tasks
-            var tasks = ids.Select(async idName =>
+            var tasks = idsList.Select(async idName =>
             {
                 var sbLocal = new StringBuilder();
                 string q = idName;
@@ -208,7 +146,44 @@ public class PrometheusService : IPrometheusService
             return Encoding.UTF8.GetString(ms.ToArray());
         }
 
-        // Single-identifier request (existing behavior)
+        // Single-identifier request
+        if (idsList.Count == 0)
+        {
+            throw new InvalidOperationException("No Prometheus identifier configured for this metric type.");
+        }
+
+        var singleId = idsList[0];
+        string singleQuery = singleId ?? string.Empty;
+        if (!string.IsNullOrWhiteSpace(dto.Instance))
+        {
+            singleQuery = $"{singleQuery}{{instance=\"{dto.Instance}\"}}";
+        }
+
+        var builder = new StringBuilder();
+        if (dto.IsRange)
+        {
+            builder.Append("/api/v1/query_range?");
+            builder.Append("query=").Append(Uri.EscapeDataString(singleQuery));
+
+            DateTime start = dto.Start ?? DateTime.UtcNow.AddHours(-1);
+            DateTime end = dto.End ?? DateTime.UtcNow;
+            string? step = string.IsNullOrWhiteSpace(dto.Step) ? "15s" : dto.Step;
+
+            builder.Append("&start=").Append(((DateTimeOffset)start).ToUnixTimeSeconds());
+            builder.Append("&end=").Append(((DateTimeOffset)end).ToUnixTimeSeconds());
+            builder.Append("&step=").Append(Uri.EscapeDataString(step));
+        }
+        else
+        {
+            builder.Append("/api/v1/query?");
+            builder.Append("query=").Append(Uri.EscapeDataString(singleQuery));
+
+            DateTime time = dto.Time ?? DateTime.UtcNow;
+            builder.Append("&time=").Append(((DateTimeOffset)time).ToUnixTimeSeconds());
+        }
+
+        string url = builder.ToString();
+
         using var res = await _http.GetAsync(url);
         string content = await res.Content.ReadAsStringAsync();
 

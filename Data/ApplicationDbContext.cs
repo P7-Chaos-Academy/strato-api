@@ -140,7 +140,12 @@ public class ApplicationDbContext : DbContext
             entity.HasKey(e => e.Id);
             entity.Property(e => e.Name).IsRequired().HasMaxLength(100);
             entity.Property(e => e.Description).IsRequired().HasMaxLength(500);
-            entity.Property(e => e.PrometheusIdentifier).IsRequired().HasMaxLength(200);
+            entity.Property(e => e.PrometheusIdentifier)
+                .IsRequired()
+                .HasConversion(
+                    v => string.Join(',', v),
+                    v => v.Split(',', StringSplitOptions.RemoveEmptyEntries).Select(s => s.Trim()).ToList())
+                .HasMaxLength(200);
             entity.Property(e => e.Unit).IsRequired(false).HasMaxLength(50);
             entity.Property(e => e.CreatedAt).IsRequired();
             entity.Property(e => e.CreatedBy).IsRequired(false);
