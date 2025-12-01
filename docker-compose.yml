@@ -31,7 +31,7 @@ services:
       - ConnectionStrings__DefaultConnection=Host=postgres;Port=5432;Database=strato;Username=postgres;Password=postgres;
       - JwtSettings__SecretKey=development-jwt-secret-key-that-is-long-enough-for-jwt-tokens-to-work-properly-and-secure
       - ApiKey=test
-      - Prometheus__BaseUrl=http://100.111.154.43:30080
+      - Prometheus__BaseUrl=http://100.82.35.35:30080
     depends_on:
       postgres:
         condition: service_healthy
