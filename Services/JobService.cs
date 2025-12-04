@@ -84,4 +84,21 @@ public class JobService : IJobService
         
         return new OkObjectResult(jobStatusResponse);
     }
+
+    public async Task<IActionResult> GetAllJobs()
+    {
+        string uri = "/api/v1/jobs/status";
+        HttpResponseMessage res = await _httpClient.GetAsync(uri);
+        
+        if (!res.IsSuccessStatusCode)
+        {
+            string errorContent = await res.Content.ReadAsStringAsync();
+            return new BadRequestObjectResult(new { error = errorContent, statusCode = res.StatusCode });
+        }
+        
+        string responseContent = await res.Content.ReadAsStringAsync();
+        AllJobsResponseDto? allJobsResponse = JsonSerializer.Deserialize<AllJobsResponseDto>(responseContent, JsonOptions);
+        
+        return new OkObjectResult(allJobsResponse);
+    }
 }

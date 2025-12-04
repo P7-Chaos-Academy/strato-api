@@ -10,4 +10,6 @@ public interface IJobService
     public Task<IActionResult> GetEstimatedTimeRemaining(int tokenCount);
     
     public Task<IActionResult> GetJobStatus(string jobId);
+
+    public Task<IActionResult> GetAllJobs();
 }
