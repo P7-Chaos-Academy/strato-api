@@ -30,7 +30,14 @@ public class ApiKeyMiddleware
             await _next(context);
             return;
         }
-        
+
+        // Skip API key check for CORS preflight requests
+        if (context.Request.Method == HttpMethods.Options)
+        {
+            await _next(context);
+            return;
+        }
+
         if (!context.Request.Headers.TryGetValue(headerName, out var extractedApiKey) || string.IsNullOrWhiteSpace(extractedApiKey))
         {
             context.Response.StatusCode = (int)HttpStatusCode.Unauthorized;
