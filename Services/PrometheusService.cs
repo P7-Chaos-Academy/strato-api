@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Text;
 using System.Text.Json;
 using System.Linq;
@@ -17,28 +18,42 @@ public class PrometheusService : IPrometheusService
 {
     private readonly HttpClient _http;
     private readonly ApplicationDbContext _context;
+    private readonly ILogger<PrometheusService> _logger;
 
-    public PrometheusService(HttpClient http, ApplicationDbContext context)
+    public PrometheusService(HttpClient http, ApplicationDbContext context, ILogger<PrometheusService> logger)
     {
         _http = http;
         _context = context;
+        _logger = logger;
+        _logger.LogInformation("[PrometheusService] Initialized with base address: {BaseAddress}", _http.BaseAddress);
     }
 
     public async Task<string> QueryAsync(PrometheusQueryDto dto)
     {
+        var totalSw = Stopwatch.StartNew();
+
         if (dto == null) throw new ArgumentNullException(nameof(dto));
 
         if (dto.MetricIds == null || dto.MetricIds.Count == 0)
+        {
+            _logger.LogWarning("[PrometheusService] QueryAsync called with no MetricIds");
             throw new ArgumentException("At least one MetricId must be provided in MetricIds.");
+        }
+
+        _logger.LogInformation("[PrometheusService] QueryAsync - MetricIds: [{MetricIds}], IsRange: {IsRange}, Instance: {Instance}",
+            string.Join(", ", dto.MetricIds), dto.IsRange, dto.Instance ?? "(all)");
 
         // Load all requested metric types in one query
         var metricTypes = await _context.MetricTypes
             .Where(mt => dto.MetricIds.Contains(mt.Id))
             .ToListAsync();
 
+        _logger.LogDebug("[PrometheusService] Found {Count} metric types in database", metricTypes.Count);
+
         var missing = dto.MetricIds.Except(metricTypes.Select(m => m.Id)).ToList();
         if (missing.Any())
         {
+            _logger.LogError("[PrometheusService] Metric types not found: [{MissingIds}]", string.Join(", ", missing));
             throw new KeyNotFoundException($"Metric types not found: {string.Join(',', missing)}");
         }
 
@@ -66,14 +81,21 @@ public class PrometheusService : IPrometheusService
             }
         }
 
+        _logger.LogDebug("[PrometheusService] Built {Count} Prometheus queries: [{Queries}]",
+            queries.Count, string.Join(", ", queries));
+
         DateTime start = dto.Start ?? DateTime.UtcNow.AddHours(-1);
         DateTime end = dto.End ?? DateTime.UtcNow;
         string step = string.IsNullOrWhiteSpace(dto.Step) ? "15s" : dto.Step;
         DateTime time = dto.Time ?? DateTime.UtcNow;
 
+        _logger.LogDebug("[PrometheusService] Query params - Start: {Start}, End: {End}, Step: {Step}, Time: {Time}",
+            start, end, step, time);
+
         // Execute all queries (one HTTP request per query) in parallel
         var tasks = queries.Select(async q =>
         {
+            var sw = Stopwatch.StartNew();
             var sb = new StringBuilder();
             if (dto.IsRange)
             {
@@ -88,16 +110,37 @@ public class PrometheusService : IPrometheusService
                 sb.Append("&time=").Append(((DateTimeOffset)time).ToUnixTimeSeconds());
             }
 
-            var res = await _http.GetAsync(sb.ToString());
-            var content = await res.Content.ReadAsStringAsync();
-            if (!res.IsSuccessStatusCode)
+            var requestUri = sb.ToString();
+            _logger.LogDebug("[PrometheusService] Sending request to Prometheus: {Uri}", _http.BaseAddress + requestUri);
+
+            try
             {
-                throw new HttpRequestException($"Prometheus returned {(int)res.StatusCode}: {content}");
+                var res = await _http.GetAsync(requestUri);
+                sw.Stop();
+                var content = await res.Content.ReadAsStringAsync();
+
+                if (!res.IsSuccessStatusCode)
+                {
+                    _logger.LogError("[PrometheusService] Prometheus query failed - Status: {StatusCode}, Duration: {Duration}ms, Query: {Query}, Response: {Response}",
+                        (int)res.StatusCode, sw.ElapsedMilliseconds, q, content);
+                    throw new HttpRequestException($"Prometheus returned {(int)res.StatusCode}: {content}");
+                }
+
+                _logger.LogDebug("[PrometheusService] Prometheus query succeeded - Duration: {Duration}ms, Query: {Query}",
+                    sw.ElapsedMilliseconds, q);
+                return content;
             }
-            return content;
+            catch (Exception ex) when (ex is not HttpRequestException)
+            {
+                sw.Stop();
+                _logger.LogError(ex, "[PrometheusService] Prometheus request exception after {Duration}ms - Query: {Query}, Target: {Target}",
+                    sw.ElapsedMilliseconds, q, _http.BaseAddress);
+                throw;
+            }
         }).ToList();
 
         var contents = await Task.WhenAll(tasks);
+        _logger.LogInformation("[PrometheusService] All {Count} Prometheus queries completed", contents.Length);
 
         // Merge results from all responses
         string? resultType = null;
@@ -165,6 +208,10 @@ public class PrometheusService : IPrometheusService
 
         writerOut.WriteEndObject();
         await writerOut.FlushAsync();
+
+        totalSw.Stop();
+        _logger.LogInformation("[PrometheusService] QueryAsync completed - TotalDuration: {Duration}ms, ResultCount: {ResultCount}",
+            totalSw.ElapsedMilliseconds, mergedResults.Count);
 
         return Encoding.UTF8.GetString(msOut.ToArray());
     }
