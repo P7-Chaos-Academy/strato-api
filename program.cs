@@ -11,8 +11,24 @@ using stratoapi.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Configure logging early so we can use it during startup
+builder.Logging.ClearProviders();
+builder.Logging.AddConsole();
+builder.Logging.AddDebug();
+
+// Build a temporary logger for startup diagnostics
+using var loggerFactory = LoggerFactory.Create(loggingBuilder =>
+{
+    loggingBuilder.AddConsole();
+});
+var startupLogger = loggerFactory.CreateLogger("Startup");
+
+startupLogger.LogInformation("=== STRATO-API STARTING ===");
+startupLogger.LogInformation("Environment: {Environment}", builder.Environment.EnvironmentName);
+startupLogger.LogInformation("ContentRootPath: {Path}", builder.Environment.ContentRootPath);
+
 // Load Docker secrets if running in container
-LoadDockerSecrets(builder.Configuration);
+LoadDockerSecrets(builder.Configuration, startupLogger);
 
 // Configure Kestrel for Docker HTTPS
 builder.WebHost.ConfigureKestrel(serverOptions =>
@@ -31,8 +47,15 @@ builder.Services.AddControllers()
     });
 
 // Configure Entity Framework
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+// Log connection string with password masked
+var maskedConnectionString = connectionString != null
+    ? System.Text.RegularExpressions.Regex.Replace(connectionString, @"Password=([^;]*)", "Password=***")
+    : "(not configured)";
+startupLogger.LogInformation("Database Configuration - ConnectionString: {ConnectionString}", maskedConnectionString);
+
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"))
+    options.UseNpgsql(connectionString)
            .ConfigureWarnings(warnings => warnings.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning)));
 
 // Configure JWT Authentication
@@ -40,6 +63,9 @@ var jwtSettings = builder.Configuration.GetSection("JwtSettings");
 var secretKey = jwtSettings["SecretKey"] ?? throw new InvalidOperationException("JWT SecretKey not configured");
 var issuer = jwtSettings["Issuer"] ?? "P7-Chaos-Academy";
 var audience = jwtSettings["Audience"] ?? "clankers";
+
+startupLogger.LogInformation("JWT Configuration - Issuer: {Issuer}, Audience: {Audience}, SecretKey length: {KeyLength}",
+    issuer, audience, secretKey?.Length ?? 0);
 
 builder.Services.AddAuthentication(options =>
 {
@@ -75,17 +101,27 @@ builder.Services.AddSingleton<IApiKeyService, ApiKeyService>();
 // Metrics service
 builder.Services.AddScoped<IMetricsService, MetricsService>();
 string prometheusBaseUrl = builder.Configuration["Prometheus:BaseUrl"] ?? "http://localhost:9090";
+startupLogger.LogInformation("Prometheus Configuration - BaseUrl: {BaseUrl}", prometheusBaseUrl);
 builder.Services.AddHttpClient<IPrometheusService, PrometheusService>(client =>
 {
     client.BaseAddress = new Uri(prometheusBaseUrl);
+    client.Timeout = TimeSpan.FromSeconds(30);
 });
 
 // Cluster service
 string clusterBaseUrl = builder.Configuration["Cluster:BaseUrl"] ?? "http://localhost:80";
+startupLogger.LogInformation("Cluster API Configuration - BaseUrl: {BaseUrl}", clusterBaseUrl);
 builder.Services.AddHttpClient<IJobService, JobService>(client =>
 {
     client.BaseAddress = new Uri(clusterBaseUrl);
+    client.Timeout = TimeSpan.FromSeconds(30);
 });
+
+// Log API key configuration
+var apiKeyHeaderName = builder.Configuration["ApiKeyHeaderName"] ?? "X-API-Key";
+var apiKeyConfigured = !string.IsNullOrEmpty(builder.Configuration["ApiKey"]);
+startupLogger.LogInformation("API Key Configuration - HeaderName: {HeaderName}, ApiKey configured: {Configured}",
+    apiKeyHeaderName, apiKeyConfigured);
 
 
 // Mappers
@@ -161,6 +197,8 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
+startupLogger.LogInformation("=== APPLICATION BUILT - CONFIGURING PIPELINE ===");
+
 app.UseCors("AllowFrontend");
 
 // Database migration and seeding
@@ -179,14 +217,18 @@ app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 
+startupLogger.LogInformation("=== STRATO-API READY - STARTING HTTP SERVER ===");
+
 app.Run();
 
-static void LoadDockerSecrets(IConfiguration configuration)
+static void LoadDockerSecrets(IConfiguration configuration, ILogger logger)
 {
     const string secretsPath = "/run/secrets";
-    
+
     if (Directory.Exists(secretsPath))
     {
+        logger.LogInformation("Docker secrets directory found at {Path}", secretsPath);
+
         // Load database connection string from Docker secret
         var dbSecretPath = Path.Combine(secretsPath, "db_connection_string");
         if (File.Exists(dbSecretPath))
@@ -196,7 +238,16 @@ static void LoadDockerSecrets(IConfiguration configuration)
             {
                 new KeyValuePair<string, string?>("ConnectionStrings:DefaultConnection", connectionString)
             });
+            logger.LogInformation("Loaded database connection string from Docker secret");
         }
+        else
+        {
+            logger.LogDebug("No Docker secret found at {Path}", dbSecretPath);
+        }
+    }
+    else
+    {
+        logger.LogDebug("Docker secrets directory not found at {Path} - using environment/appsettings configuration", secretsPath);
     }
 }
 

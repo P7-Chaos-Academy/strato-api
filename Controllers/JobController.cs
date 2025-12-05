@@ -67,9 +67,6 @@ public class JobController : ControllerBase
             EstimatedTimeRemainingSeconds = estimatedTimeSeconds
         };
 
-        _logger.LogInformation("[JobController] PostJob succeeded - JobId: {JobId}, EstimatedTime: {EstimatedTime}s",
-            jobData.JobId, estimatedTimeSeconds);
-
         return Ok(combinedResponse);
     }
 
