@@ -74,10 +74,17 @@ builder.Services.AddSingleton<IApiKeyService, ApiKeyService>();
 
 // Metrics service
 builder.Services.AddScoped<IMetricsService, MetricsService>();
-var prometheusBase = builder.Configuration["Prometheus:BaseUrl"] ?? "http://localhost:9090";
+string prometheusBaseUrl = builder.Configuration["Prometheus:BaseUrl"] ?? "http://localhost:9090";
 builder.Services.AddHttpClient<IPrometheusService, PrometheusService>(client =>
 {
-    client.BaseAddress = new Uri(prometheusBase);
+    client.BaseAddress = new Uri(prometheusBaseUrl);
+});
+
+// Cluster service
+string clusterBaseUrl = builder.Configuration["Cluster:BaseUrl"] ?? "http://localhost:80";
+builder.Services.AddHttpClient<IJobService, JobService>(client =>
+{
+    client.BaseAddress = new Uri(clusterBaseUrl);
 });
 
 
