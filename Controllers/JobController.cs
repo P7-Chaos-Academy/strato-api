@@ -71,4 +71,11 @@ public class JobController : ControllerBase
         IActionResult jobStatusResponse = await _jobService.GetJobStatus(jobId);
         return jobStatusResponse;
     }
+
+    [HttpGet("all-jobs")]
+    public async Task<IActionResult> GetAllJobs()
+    {
+        IActionResult allJobsResponse = await _jobService.GetAllJobs();
+        return allJobsResponse;
+    }
 }
