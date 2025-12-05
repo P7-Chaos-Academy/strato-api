@@ -77,14 +77,14 @@ public class PrometheusService : IPrometheusService
             var sb = new StringBuilder();
             if (dto.IsRange)
             {
-                sb.Append("query_range?query=").Append(Uri.EscapeDataString(q));
+                sb.Append("api/v1/query_range?query=").Append(Uri.EscapeDataString(q));
                 sb.Append("&start=").Append(((DateTimeOffset)start).ToUnixTimeSeconds());
                 sb.Append("&end=").Append(((DateTimeOffset)end).ToUnixTimeSeconds());
                 sb.Append("&step=").Append(Uri.EscapeDataString(step));
             }
             else
             {
-                sb.Append("query?query=").Append(Uri.EscapeDataString(q));
+                sb.Append("api/v1/query?query=").Append(Uri.EscapeDataString(q));
                 sb.Append("&time=").Append(((DateTimeOffset)time).ToUnixTimeSeconds());
             }
 
