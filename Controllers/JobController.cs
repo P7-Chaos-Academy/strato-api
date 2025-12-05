@@ -57,7 +57,6 @@ public class JobController : ControllerBase
             JobDetails = jobData,
             EstimatedTimeRemainingSeconds = estimatedTimeSeconds
         };
-        
         return Ok(combinedResponse);
     }
     
