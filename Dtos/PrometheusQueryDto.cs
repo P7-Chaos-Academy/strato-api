@@ -9,7 +9,7 @@ namespace stratoapi.Dtos;
 /// </summary>
 public class PrometheusQueryDto
 {
-    [Required]
+    [System.ComponentModel.DataAnnotations.Required]
     public required List<int> MetricIds { get; set; }
 
     /// <summary>
