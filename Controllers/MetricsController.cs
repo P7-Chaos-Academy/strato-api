@@ -45,6 +45,23 @@ public class MetricsController : ControllerBase
         await _metricsService.DeleteMetricType(id);
         return Ok("Metric type deleted successfully.");
     }
+
+    [HttpPut("metrics/{id}")]
+    public async Task<IActionResult> UpdateMetric(int id, [FromBody] MetricsDto metricType)
+    {
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ModelState);
+        }
+
+        MetricType? updated = await _metricsService.UpdateMetricType(id, metricType);
+        if (updated == null)
+        {
+            return NotFound($"Metric type with ID {id} not found.");
+        }
+
+        return Ok(updated);
+    }
     
     /// <summary>
     /// Simplified proxy to Prometheus. Does not require JWT but does require the API key middleware.
