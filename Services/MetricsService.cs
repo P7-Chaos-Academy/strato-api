@@ -53,4 +53,24 @@ public class MetricsService : IMetricsService
         metricType.IsDeleted = true;
         await _context.SaveChangesAsync();
     }
+
+    /// <inheritdoc/>
+    public async Task<MetricType?> UpdateMetricType(int id, MetricsDto metricType)
+    {
+        MetricType? existing = await _context.MetricTypes
+            .FirstOrDefaultAsync(e => e.Id == id && !e.IsDeleted);
+
+        if (existing == null)
+        {
+            return null;
+        }
+
+        existing.Name = metricType.Name;
+        existing.Description = metricType.Description;
+        existing.PrometheusIdentifier = metricType.PrometheusIdentifier;
+        existing.Unit = metricType.Unit;
+
+        await _context.SaveChangesAsync();
+        return existing;
+    }
 }
