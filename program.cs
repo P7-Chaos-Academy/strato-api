@@ -186,12 +186,25 @@ builder.Services.AddSwaggerGen(c =>
 // Add CORS
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowFrontend",
+    // Production policy - only allow the production frontend
+    options.AddPolicy("Production",
         policy =>
         {
             policy.WithOrigins("https://frontend.gamel.dk")
                   .AllowAnyHeader()
                   .AllowAnyMethod();
+        });
+
+    // Development policy - allow localhost origins
+    options.AddPolicy("Development",
+        policy =>
+        {
+            policy.WithOrigins(
+                    "http://localhost:3000",
+                    "http://127.0.0.1:3000")
+                  .AllowAnyHeader()
+                  .AllowAnyMethod()
+                  .AllowCredentials();
         });
 });
 
@@ -199,7 +212,10 @@ var app = builder.Build();
 
 startupLogger.LogInformation("=== APPLICATION BUILT - CONFIGURING PIPELINE ===");
 
-app.UseCors("AllowFrontend");
+// Use environment-specific CORS policy
+var corsPolicy = app.Environment.IsDevelopment() ? "Development" : "Production";
+startupLogger.LogInformation("Using CORS policy: {Policy}", corsPolicy);
+app.UseCors(corsPolicy);
 
 // Database migration and seeding
 await RunMigrationsAsync(app);
@@ -210,8 +226,6 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
-
-app.UseCors("AllowAll");
 app.UseMiddleware<ApiKeyMiddleware>();
 app.UseAuthentication();
 app.UseAuthorization();
