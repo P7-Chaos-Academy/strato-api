@@ -30,4 +30,12 @@ public interface IMetricsService
     /// </summary>
     /// <param name="id">The unique identifier of the metric type to delete.</param
     Task DeleteMetricType(int id);
+
+    /// <summary>
+    /// Updates an existing metric type.
+    /// </summary>
+    /// <param name="id">The unique identifier of the metric type to update.</param>
+    /// <param name="metricType">The metric type DTO containing updated values.</param>
+    /// <returns>The updated metric type, or <c>null</c> if no metric type with the given ID exists.</returns>
+    Task<MetricType?> UpdateMetricType(int id, MetricsDto metricType);
 }
