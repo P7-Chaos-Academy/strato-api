@@ -27,7 +27,7 @@ public class JobController : ControllerBase
         }
         
         IActionResult jobResponse = await _jobService.PostJob(jobRequestDto);
-        IActionResult estimatedJobTimeResult = await _jobService.GetEstimatedTimeRemaining(jobRequestDto.n_predict);
+        IActionResult estimatedJobTimeResult = await _jobService.GetEstimatedTimeRemaining(jobRequestDto.n_predict, jobRequestDto.ClusterId);
         
         // Check if job submission was successful
         if (jobResponse is not OkObjectResult jobOkResult || jobOkResult.Value is not JobResponseDto jobData)
@@ -61,20 +61,20 @@ public class JobController : ControllerBase
     }
     
     [HttpGet("jobId/{jobId}")]
-    public async Task<IActionResult> GetJobStatus([FromRoute] string jobId)
+    public async Task<IActionResult> GetJobStatus([FromRoute] string jobId, [FromQuery] int clusterId)
     {
         if (string.IsNullOrWhiteSpace(jobId))
         {
             return BadRequest("Job ID cannot be null or empty.");
         }
-        IActionResult jobStatusResponse = await _jobService.GetJobStatus(jobId);
+        IActionResult jobStatusResponse = await _jobService.GetJobStatus(jobId, clusterId);
         return jobStatusResponse;
     }
 
     [HttpGet("all-jobs")]
-    public async Task<IActionResult> GetAllJobs()
+    public async Task<IActionResult> GetAllJobs([FromQuery] int clusterId)
     {
-        IActionResult allJobsResponse = await _jobService.GetAllJobs();
+        IActionResult allJobsResponse = await _jobService.GetAllJobs(clusterId);
         return allJobsResponse;
     }
 }

@@ -100,22 +100,15 @@ builder.Services.AddSingleton<IApiKeyService, ApiKeyService>();
 
 // Metrics service
 builder.Services.AddScoped<IMetricsService, MetricsService>();
-string prometheusBaseUrl = builder.Configuration["Prometheus:BaseUrl"] ?? "http://localhost:9090";
-startupLogger.LogInformation("Prometheus Configuration - BaseUrl: {BaseUrl}", prometheusBaseUrl);
-builder.Services.AddHttpClient<IPrometheusService, PrometheusService>(client =>
-{
-    client.BaseAddress = new Uri(prometheusBaseUrl);
-    client.Timeout = TimeSpan.FromSeconds(30);
-});
+
+// Prometheus service
+builder.Services.AddScoped<IPrometheusService, PrometheusService>();
+
+// Job service
+builder.Services.AddScoped<IJobService, JobService>();
 
 // Cluster service
-string clusterBaseUrl = builder.Configuration["Cluster:BaseUrl"] ?? "http://localhost:80";
-startupLogger.LogInformation("Cluster API Configuration - BaseUrl: {BaseUrl}", clusterBaseUrl);
-builder.Services.AddHttpClient<IJobService, JobService>(client =>
-{
-    client.BaseAddress = new Uri(clusterBaseUrl);
-    client.Timeout = TimeSpan.FromSeconds(30);
-});
+builder.Services.AddScoped<IClusterService, ClusterService>();
 
 // Log API key configuration
 var apiKeyHeaderName = builder.Configuration["ApiKeyHeaderName"] ?? "X-API-Key";

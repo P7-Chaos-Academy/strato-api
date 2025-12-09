@@ -15,22 +15,29 @@ namespace stratoapi.Services;
 /// </summary>
 public class PrometheusService : IPrometheusService
 {
-    private readonly HttpClient _http;
     private readonly ApplicationDbContext _context;
+    private readonly IClusterService _clusterService;
 
-    public PrometheusService(HttpClient http, ApplicationDbContext context)
+    public PrometheusService(ApplicationDbContext context,  IClusterService clusterService)
     {
-        _http = http;
         _context = context;
+        _clusterService = clusterService;
     }
 
-    public async Task<string> QueryAsync(PrometheusQueryDto dto)
+    public async Task<string> QueryAsync(PrometheusQueryDto dto, int clusterId)
     {
         if (dto == null) throw new ArgumentNullException(nameof(dto));
+        if (clusterId <= 0) throw new ArgumentOutOfRangeException(nameof(clusterId));
 
         if (dto.MetricIds == null || dto.MetricIds.Count == 0)
             throw new ArgumentException("At least one MetricId must be provided in MetricIds.");
 
+        string prometheusBaseUrl = await _clusterService.GetClusterPrometheusEndpoint(clusterId);
+        
+        HttpClient httpClient = new HttpClient();
+        httpClient.BaseAddress = new Uri(prometheusBaseUrl);
+        httpClient.Timeout = TimeSpan.FromSeconds(30);
+        
         // Load all requested metric types in one query
         var metricTypes = await _context.MetricTypes
             .Where(mt => dto.MetricIds.Contains(mt.Id))
@@ -88,7 +95,7 @@ public class PrometheusService : IPrometheusService
                 sb.Append("&time=").Append(((DateTimeOffset)time).ToUnixTimeSeconds());
             }
 
-            var res = await _http.GetAsync(sb.ToString());
+            var res = await httpClient.GetAsync(sb.ToString());
             var content = await res.Content.ReadAsStringAsync();
             if (!res.IsSuccessStatusCode)
             {
