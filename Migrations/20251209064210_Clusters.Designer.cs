@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using stratoapi.Data;
@@ -11,9 +12,11 @@ using stratoapi.Data;
 namespace stratoapi.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251209064210_Clusters")]
+    partial class Clusters
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -186,8 +189,8 @@ namespace stratoapi.Migrations
                             CreatedAt = new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc),
                             Email = "seed@example.com",
                             IsDeleted = false,
-                            PasswordHash = new byte[] { 171, 229, 133, 254, 218, 230, 213, 247, 234, 237, 240, 119, 106, 79, 173, 67, 69, 153, 29, 209, 158, 6, 159, 30, 244, 182, 115, 146, 107, 155, 21, 153, 113, 225, 172, 19, 142, 65, 117, 50, 121, 174, 82, 174, 65, 152, 171, 237, 234, 197, 233, 187, 141, 184, 191, 14, 238, 67, 55, 60, 243, 128, 71, 66 },
-                            PasswordSalt = new byte[] { 74, 161, 237, 64, 119, 139, 202, 91, 110, 88, 69, 82, 192, 66, 192, 63, 236, 3, 98, 217, 159, 90, 237, 187, 219, 195, 56, 106, 206, 137, 53, 190, 242, 73, 59, 179, 249, 156, 74, 155, 56, 2, 130, 245, 29, 213, 60, 190, 231, 252, 195, 175, 120, 197, 39, 154, 64, 219, 191, 161, 78, 160, 68, 207, 247, 60, 72, 89, 32, 13, 223, 236, 130, 71, 232, 222, 125, 253, 231, 254, 215, 120, 103, 146, 250, 73, 112, 178, 186, 184, 235, 76, 148, 164, 118, 247, 165, 158, 222, 227, 252, 212, 75, 52, 145, 62, 142, 104, 123, 171, 49, 26, 241, 165, 97, 30, 24, 228, 141, 178, 13, 232, 112, 148, 11, 204, 201, 133 },
+                            PasswordHash = new byte[] { 178, 154, 20, 230, 163, 109, 208, 248, 3, 131, 3, 249, 215, 248, 224, 202, 186, 204, 182, 249, 72, 104, 94, 20, 206, 228, 53, 19, 142, 37, 70, 0, 193, 32, 166, 190, 55, 13, 246, 1, 156, 152, 1, 164, 224, 31, 181, 82, 101, 110, 166, 112, 218, 101, 132, 220, 141, 243, 16, 147, 11, 86, 67, 29 },
+                            PasswordSalt = new byte[] { 231, 132, 126, 230, 33, 194, 32, 243, 184, 33, 38, 195, 64, 213, 10, 67, 216, 36, 22, 182, 57, 232, 33, 231, 232, 41, 183, 62, 150, 193, 184, 165, 196, 224, 146, 238, 234, 55, 88, 50, 210, 42, 166, 134, 48, 21, 246, 183, 73, 227, 106, 22, 98, 125, 201, 214, 214, 47, 231, 91, 165, 81, 158, 249, 231, 243, 39, 196, 33, 199, 98, 206, 47, 85, 67, 18, 240, 87, 237, 90, 13, 143, 60, 151, 160, 20, 142, 157, 195, 251, 78, 176, 29, 35, 189, 36, 149, 80, 157, 132, 185, 85, 21, 122, 29, 168, 12, 249, 164, 150, 246, 208, 0, 122, 72, 166, 172, 190, 99, 195, 185, 210, 1, 67, 208, 74, 209, 203 },
                             Role = 2,
                             Username = "seedUser"
                         });

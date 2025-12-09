@@ -68,14 +68,19 @@ public class MetricsController : ControllerBase
     /// Use this endpoint to execute instant or range queries against the configured Prometheus server.
     /// </summary>
     [HttpPost("query")]
-    public async Task<IActionResult> QueryPrometheus([FromBody] PrometheusQueryDto dto)
+    public async Task<IActionResult> QueryPrometheus([FromBody] PrometheusQueryDto dto, [FromQuery] int clusterId)
     {
         if (!ModelState.IsValid)
         {
             return BadRequest(ModelState);
         }
 
-        string result = await _prometheusService.QueryAsync(dto);
+        if (clusterId <= 0)
+        {
+            return BadRequest("clusterId is required and must be greater than 0");
+        }
+
+        string result = await _prometheusService.QueryAsync(dto, clusterId);
         return Content(result, "application/json");
     }
 }
