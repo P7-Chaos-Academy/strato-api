@@ -20,28 +20,28 @@ public class clusterController : ControllerBase
     }
 
     [HttpGet("cluster")]
-    public async Task<IActionResult> Getcluster()
+    public async Task<IActionResult> GetCluster()
     {
         List<Cluster> cluster = await _clusterService.GetAllClusters();
         return Ok(cluster);
     }
     
     [HttpPost("cluster")]
-    public async Task<IActionResult> AddMetric([FromBody] ClusterDto cluster)
+    public async Task<IActionResult> AddCluster([FromBody] ClusterDto cluster)
     {
         if (!ModelState.IsValid)
         {
             return BadRequest(ModelState);
         }
         await _clusterService.AddCluster(cluster);
-        return Ok("Metric type added successfully.");
+        return Ok("Cluster added successfully.");
     }
 
     [HttpDelete("cluster/{id}")]
-    public async Task<IActionResult> DeleteMetric(int id)
+    public async Task<IActionResult> DeleteCluster(int id)
     {
         await _clusterService.DeleteCluster(id);
-        return Ok("Metric type deleted successfully.");
+        return Ok("Cluster deleted successfully.");
     }
 
     [HttpPut("cluster/{id}")]
@@ -55,7 +55,7 @@ public class clusterController : ControllerBase
         Cluster? updated = await _clusterService.UpdateCluster(id, cluster);
         if (updated == null)
         {
-            return NotFound($"Metric type with ID {id} not found.");
+            return NotFound($"Cluster with ID {id} not found.");
         }
 
         return Ok(updated);
