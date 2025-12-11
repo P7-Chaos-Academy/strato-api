@@ -106,4 +106,23 @@ public class ClusterService : IClusterService
 
         return Task.FromResult(cluster.ApiEndpoint);
     }
+
+    public Task<Dictionary<string, string>> CheckAllClustersHealth()
+    {
+        _logger.LogInformation("CheckAllClustersHealth called");
+
+        var healthStatuses = new Dictionary<string, string>();
+        var clusters = _dbContext.Clusters
+            .Where(e => !e.IsDeleted)
+            .ToList();
+
+        foreach (var cluster in clusters)
+        {
+            // Placeholder logic for health check
+            healthStatuses[cluster.Name] = "Healthy"; // In real implementation, perform actual health check
+            _logger.LogInformation("Cluster {ClusterName} health status: {HealthStatus}", cluster.Name, healthStatuses[cluster.Name]);
+        }
+
+        return Task.FromResult(healthStatuses);
+    }
 }

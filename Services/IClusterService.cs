@@ -16,4 +16,6 @@ public interface IClusterService
     Task<string> GetClusterPrometheusEndpoint(int clusterId);
     
     Task<string> GetClusterApiEndpoint(int clusterId);
+
+    Task<Dictionary<string, string>> CheckAllClustersHealth();
 }
