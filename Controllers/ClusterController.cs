@@ -64,7 +64,7 @@ public class clusterController : ControllerBase
     [HttpGet("health")]
     public async Task<IActionResult> CheckClusterHealth()
     {
-        var healthStatuses = await _clusterService.CheckAllClustersHealth();
+        Dictionary<string, string> healthStatuses = await _clusterService.CheckAllClustersHealth();
         return Ok(healthStatuses);
     }
 }
