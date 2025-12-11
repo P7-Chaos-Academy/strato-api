@@ -1,6 +1,8 @@
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using stratoapi.Data;
 using stratoapi.Dtos;
+using stratoapi.Helpers;
 using stratoapi.Models;
 
 namespace stratoapi.Services;
@@ -9,11 +11,13 @@ public class ClusterService : IClusterService
 {
     private readonly ILogger<ClusterService> _logger;
     private readonly ApplicationDbContext _dbContext;
+    private readonly HttpClientHelper _httpClientHelper;
 
-    public ClusterService(ILogger<ClusterService> logger, ApplicationDbContext dbContext)
+    public ClusterService(ILogger<ClusterService> logger, ApplicationDbContext dbContext, HttpClientHelper httpClientHelper)
     {
         _logger = logger;
         _dbContext = dbContext;
+        _httpClientHelper = httpClientHelper;
     }
 
     public async Task<List<Cluster>> GetAllClusters()
@@ -111,15 +115,20 @@ public class ClusterService : IClusterService
     {
         _logger.LogInformation("CheckAllClustersHealth called");
 
-        var healthStatuses = new Dictionary<string, string>();
-        var clusters = _dbContext.Clusters
+        Dictionary<string, string> healthStatuses = [];
+        List<Cluster> clusters = _dbContext.Clusters
             .Where(e => !e.IsDeleted)
             .ToList();
 
-        foreach (var cluster in clusters)
+        foreach (Cluster cluster in clusters)
         {
-            // Placeholder logic for health check
-            healthStatuses[cluster.Name] = "Healthy"; // In real implementation, perform actual health check
+            string result = _httpClientHelper.HttpClient(cluster.ApiEndpoint, "health", HttpMethod.Get).Result switch
+            {
+                OkObjectResult => "Healthy",
+                _ => "Unhealthy"
+            };
+
+            healthStatuses[cluster.Name] = result;
             _logger.LogInformation("Cluster {ClusterName} health status: {HealthStatus}", cluster.Name, healthStatuses[cluster.Name]);
         }
 

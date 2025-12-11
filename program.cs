@@ -6,6 +6,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using stratoapi.Data;
 using stratoapi.Dtos;
+using stratoapi.Helpers;
 using stratoapi.Middlewares;
 using stratoapi.Services;
 
@@ -109,6 +110,9 @@ builder.Services.AddScoped<IJobService, JobService>();
 
 // Cluster service
 builder.Services.AddScoped<IClusterService, ClusterService>();
+
+// HttpClient helper
+builder.Services.AddScoped<HttpClientHelper>();
 
 // Log API key configuration
 var apiKeyHeaderName = builder.Configuration["ApiKeyHeaderName"] ?? "X-API-Key";
