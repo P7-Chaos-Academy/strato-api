@@ -60,4 +60,11 @@ public class clusterController : ControllerBase
 
         return Ok(updated);
     }
+
+    [HttpGet("health")]
+    public async Task<IActionResult> CheckClusterHealth()
+    {
+        Dictionary<string, string> healthStatuses = await _clusterService.CheckAllClustersHealth();
+        return Ok(healthStatuses);
+    }
 }
