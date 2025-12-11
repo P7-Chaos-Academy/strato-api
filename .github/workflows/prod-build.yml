@@ -28,7 +28,7 @@ jobs:
     uses: P7-Chaos-Academy/shared-workflows/.github/workflows/manifest-update.yml@main
     with:
       gitops_repo: P7-Chaos-Academy/gitops
-      manifest_path: strato-api
+      manifest_path: strato-api/deployment.yaml
       image_pattern: 'image: cgamel/strato-api:.*'
       new_image: ${{ needs.containerize.outputs.full_image }}
       commit_message: 'Update strato-api image to ${{ needs.containerize.outputs.image_tag }}'
