@@ -5,3 +5,5 @@ dotnet user-secrets set "ConnectionStrings:DefaultConnection" "Host=postgres;Por
 dotnet user-secrets set "JwtSettings:SecretKey" "development-secret-key-that-is-long-enough-for-jwt-tokens-to-work-properly-and-secure"
 
 dotnet user-secrets list
+
+a
