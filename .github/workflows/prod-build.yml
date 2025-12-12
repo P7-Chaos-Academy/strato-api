@@ -19,8 +19,8 @@ jobs:
     with:
       image_name: strato-api
       platforms: linux/amd64
+      registry_username: cgamel
     secrets:
-      DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
       DOCKER_PASSWORD: ${{ secrets.DOCKER_PASSWORD }}
 
   update-gitops:
@@ -29,7 +29,6 @@ jobs:
     with:
       gitops_repo: P7-Chaos-Academy/gitops
       manifest_path: strato/strato-api/deployment.yaml
-      image_pattern: 'image: cgamel/strato-api:.*'
       new_image: ${{ needs.containerize.outputs.full_image }}
       commit_message: 'Update strato-api image to ${{ needs.containerize.outputs.image_tag }}'
     secrets:
