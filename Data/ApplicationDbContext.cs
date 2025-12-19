@@ -117,10 +117,10 @@ public class ApplicationDbContext : DbContext
         });
         
         // Generate proper password hash and salt for seed user
-        // Password: "Clanker"
+        // Password: "p7-gr11-chaos-academy"
         using var hmac = new HMACSHA512();
         byte[] salt = hmac.Key;
-        byte[] hash = hmac.ComputeHash(Encoding.UTF8.GetBytes("Clanker"));
+        byte[] hash = hmac.ComputeHash(Encoding.UTF8.GetBytes("p7-gr11-chaos-academy"));
         
         var initUser = new User
         {

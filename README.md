@@ -1,9 +1,46 @@
-dotnet user-secrets init
+# Strato API
 
-dotnet user-secrets set "ConnectionStrings:DefaultConnection" "Host=postgres;Port=5432;Database=strato;Username=postgres;Password=postgres;"
+Backend API for the Strato cluster management system. Built with .NET 8 and PostgreSQL.
 
-dotnet user-secrets set "JwtSettings:SecretKey" "development-secret-key-that-is-long-enough-for-jwt-tokens-to-work-properly-and-secure"
+## Prerequisites
 
-dotnet user-secrets list
+- .NET 8 SDK
+- PostgreSQL (docker-compose recommended)
 
-a
+## Getting Started
+
+```bash
+dotnet restore
+dotnet build
+dotnet run
+```
+
+## Configuration
+
+Set secrets for development:
+
+```bash
+dotnet user-secrets set "ConnectionStrings:DefaultConnection" "Host=localhost;Port=5432;Database=strato;Username=postgres;Password=postgres;"
+dotnet user-secrets set "JwtSettings:SecretKey" "<your-secret>"
+```
+
+## Database Migrations
+
+```bash
+dotnet ef migrations add <MigrationName>
+dotnet ef database update
+```
+
+## API Endpoints
+
+- `/api/auth` - Authentication (JWT + API keys)
+- `/api/cluster` - Cluster management
+- `/api/jobs` - Job management
+- `/api/metrics` - Metrics
+- `/health` - Health check
+
+## Docker
+
+```bash
+docker-compose up --build
+```
