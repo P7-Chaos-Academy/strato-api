@@ -43,13 +43,12 @@ builder.Services.AddControllers()
     {
         options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
         options.JsonSerializerOptions.DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull;
-        // Accept camelCase payloads from JS frontends (e.g. metricIds, startTime)
+        // Accept camelCase payloads from frontend (e.g. metricIds, startTime)
         options.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
     });
 
 // Configure Entity Framework
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-// Log connection string with password masked
 var maskedConnectionString = connectionString != null
     ? System.Text.RegularExpressions.Regex.Replace(connectionString, @"Password=([^;]*)", "Password=***")
     : "(not configured)";
@@ -63,7 +62,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 var jwtSettings = builder.Configuration.GetSection("JwtSettings");
 var secretKey = jwtSettings["SecretKey"] ?? throw new InvalidOperationException("JWT SecretKey not configured");
 var issuer = jwtSettings["Issuer"] ?? "P7-Chaos-Academy";
-var audience = jwtSettings["Audience"] ?? "clankers";
+var audience = jwtSettings["Audience"] ?? "P7-Chaos-Academy-Clients";
 
 startupLogger.LogInformation("JWT Configuration - Issuer: {Issuer}, Audience: {Audience}, SecretKey length: {KeyLength}",
     issuer, audience, secretKey?.Length ?? 0);
@@ -124,7 +123,6 @@ startupLogger.LogInformation("API Key Configuration - HeaderName: {HeaderName}, 
 // Mappers
 builder.Services.AddAutoMapper(typeof(MetricsDto).Assembly);
 
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
